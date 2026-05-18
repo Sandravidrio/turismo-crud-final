@@ -1,0 +1,194 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Tours | Turismo Tyrion’s</title>
+  <link rel="stylesheet" href="estilos.css">
+</head>
+
+<body>
+
+<h1>Gestión de Tours</h1>
+
+<form id="form-tour">
+
+  <input type="text" id="nombre" placeholder="Nombre del tour" required>
+
+  <input type="text" id="destino" placeholder="Destino" required>
+
+  <input type="number" id="precio" placeholder="Precio" required>
+
+  <input type="text" id="descripcion" placeholder="Descripción" required>
+
+  <button type="submit">Guardar</button>
+
+</form>
+
+<hr>
+
+<h2>Lista de tours registrados</h2>
+
+<div id="lista-tours"></div>
+
+<script>
+
+let editando = false;
+let idEditar = null;
+
+function cargarTours() {
+
+  fetch('/tours')
+    .then(res => res.json())
+    .then(data => {
+
+      const lista = document.getElementById('lista-tours');
+
+      lista.innerHTML = '';
+
+      data.forEach(tour => {
+
+        const div = document.createElement('div');
+
+        div.classList.add('card');
+
+        div.innerHTML = `
+          <h3>${tour.nombre}</h3>
+
+          <p><strong>Destino:</strong> ${tour.destino}</p>
+
+          <p><strong>Precio:</strong> $${tour.precio}</p>
+
+          <p><strong>Descripción:</strong> ${tour.descripcion}</p>
+
+          <button onclick="editarTour(${tour.id})">Editar</button>
+
+          <button onclick="eliminarTour(${tour.id})">Eliminar</button>
+        `;
+
+        lista.appendChild(div);
+
+      });
+
+    });
+
+}
+
+document.getElementById('form-tour').addEventListener('submit', function(e) {
+
+  e.preventDefault();
+
+  const tour = {
+
+    nombre: document.getElementById('nombre').value,
+
+    destino: document.getElementById('destino').value,
+
+    precio: document.getElementById('precio').value,
+
+    descripcion: document.getElementById('descripcion').value
+
+  };
+
+  if(editando){
+
+    fetch('/tours/' + idEditar, {
+
+      method: 'PUT',
+
+      headers: {
+        'Content-Type': 'application/json'
+      },
+
+      body: JSON.stringify(tour)
+
+    })
+
+    .then(() => {
+
+      alert('Tour actualizado');
+
+      editando = false;
+
+      idEditar = null;
+
+      document.getElementById('form-tour').reset();
+
+      cargarTours();
+
+    });
+
+  } else {
+
+    fetch('/tours', {
+
+      method: 'POST',
+
+      headers: {
+        'Content-Type': 'application/json'
+      },
+
+      body: JSON.stringify(tour)
+
+    })
+
+    .then(() => {
+
+      alert('Tour guardado');
+
+      document.getElementById('form-tour').reset();
+
+      cargarTours();
+
+    });
+
+  }
+
+});
+
+function editarTour(id){
+
+  fetch('/tours/' + id)
+    .then(res => res.json())
+    .then(tour => {
+
+      document.getElementById('nombre').value = tour.nombre;
+
+      document.getElementById('destino').value = tour.destino;
+
+      document.getElementById('precio').value = tour.precio;
+
+      document.getElementById('descripcion').value = tour.descripcion;
+
+      editando = true;
+
+      idEditar = id;
+
+    });
+
+}
+
+function eliminarTour(id){
+
+  fetch('/tours/' + id, {
+
+    method: 'DELETE'
+
+  })
+
+  .then(() => {
+
+    alert('Tour eliminado');
+
+    cargarTours();
+
+  });
+
+}
+
+cargarTours();
+
+</script>
+
+</body>
+</html>

@@ -1,0 +1,9 @@
+[
+  {
+    "id": 1,
+    "nombre": "Tour a la playa",
+    "destino": "Puerto Vallarta",
+    "precio": 2500,
+    "descripcion": "Disfruta del mar"
+  }
+]
